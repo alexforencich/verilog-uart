@@ -66,9 +66,9 @@ module uart_rx #
 reg [DATA_WIDTH-1:0] output_axi_tdata_reg = 0;
 reg output_axi_tvalid_reg = 0;
 
-reg busy_reg;
-reg overrun_error_reg;
-reg frame_error_reg;
+reg busy_reg = 0;
+reg overrun_error_reg = 0;
+reg frame_error_reg = 0;
 
 reg [DATA_WIDTH-1:0] data_reg = 0;
 reg [18:0] prescale_reg = 0;

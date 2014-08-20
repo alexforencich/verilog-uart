@@ -64,7 +64,7 @@ reg input_axi_tready_reg = 0;
 
 reg txd_reg = 1;
 
-reg busy_reg;
+reg busy_reg = 0;
 
 reg [DATA_WIDTH:0] data_reg = 0;
 reg [18:0] prescale_reg = 0;
