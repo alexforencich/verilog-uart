@@ -94,7 +94,7 @@ always @(posedge clk or posedge rst) begin
                 input_axi_tready_reg <= ~input_axi_tready_reg;
                 prescale_reg <= (prescale << 3)-1;
                 bit_cnt <= DATA_WIDTH+1;
-                data_reg <= {input_axi_tdata, 1'b1};
+                data_reg <= {1'b1, input_axi_tdata};
                 txd_reg <= 0;
                 busy_reg <= 1;
             end
@@ -102,7 +102,7 @@ always @(posedge clk or posedge rst) begin
             if (bit_cnt > 1) begin
                 bit_cnt <= bit_cnt - 1;
                 prescale_reg <= (prescale << 3)-1;
-                {txd_reg, data_reg} <= {data_reg, 1'b0};
+                {data_reg, txd_reg} <= {1'b0, data_reg};
             end else if (bit_cnt == 1) begin
                 bit_cnt <= bit_cnt - 1;
                 prescale_reg <= (prescale << 3);

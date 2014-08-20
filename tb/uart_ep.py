@@ -54,8 +54,8 @@ def UARTSource(clk, rst,
                     bit_cnt = bit_cnt-1
                     prescale_cnt = (prescale << 3) - 1
                     if bit_cnt > 0:
-                        txd.next = (temp_data & (1 << (width-1))) != 0
-                        temp_data = temp_data << 1
+                        txd.next = temp_data & 1 != 0
+                        temp_data = temp_data >> 1
                     else:
                         txd.next = 1
                 elif len(frame) > 0 or not fifo.empty():
@@ -102,7 +102,7 @@ def UARTSink(clk, rst,
                             prescale_cnt = 0
                             bit_cnt = 0
                     elif bit_cnt > 0:
-                        temp_data = (temp_data << 1) | rxd
+                        temp_data = temp_data | (rxd << (width-bit_cnt))
                     else:
                         prescale_cnt = 0
                         if rxd:

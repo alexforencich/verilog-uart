@@ -112,7 +112,7 @@ always @(posedge clk or posedge rst) begin
             end else if (bit_cnt > 1) begin
                 bit_cnt <= bit_cnt - 1;
                 prescale_reg <= (prescale << 3)-1;
-                data_reg <= {data_reg[DATA_WIDTH-2:0], rxd};
+                data_reg <= {rxd, data_reg[DATA_WIDTH-1:1]};
             end else if (bit_cnt == 1) begin
                 bit_cnt <= bit_cnt - 1;
                 if (rxd) begin
