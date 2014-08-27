@@ -189,6 +189,7 @@ def bench():
     return dut, source, sink, clkgen, check
 
 def test_bench():
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     sim = Simulation(bench())
     sim.run()
 
