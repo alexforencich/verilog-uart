@@ -40,9 +40,9 @@ module uart_rx #
     /*
      * AXI output
      */
-    output wire [DATA_WIDTH-1:0]  output_axi_tdata,
-    output wire                   output_axi_tvalid,
-    input  wire                   output_axi_tready,
+    output wire [DATA_WIDTH-1:0]  output_axis_tdata,
+    output wire                   output_axis_tvalid,
+    input  wire                   output_axis_tready,
 
     /*
      * UART interface
@@ -63,8 +63,8 @@ module uart_rx #
 
 );
 
-reg [DATA_WIDTH-1:0] output_axi_tdata_reg = 0;
-reg output_axi_tvalid_reg = 0;
+reg [DATA_WIDTH-1:0] output_axis_tdata_reg = 0;
+reg output_axis_tvalid_reg = 0;
 
 reg busy_reg = 0;
 reg overrun_error_reg = 0;
@@ -74,8 +74,8 @@ reg [DATA_WIDTH-1:0] data_reg = 0;
 reg [18:0] prescale_reg = 0;
 reg [3:0] bit_cnt = 0;
 
-assign output_axi_tdata = output_axi_tdata_reg;
-assign output_axi_tvalid = output_axi_tvalid_reg;
+assign output_axis_tdata = output_axis_tdata_reg;
+assign output_axis_tvalid = output_axis_tvalid_reg;
 
 assign busy = busy_reg;
 assign overrun_error = overrun_error_reg;
@@ -83,8 +83,8 @@ assign frame_error = frame_error_reg;
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
-        output_axi_tdata_reg <= 0;
-        output_axi_tvalid_reg <= 0;
+        output_axis_tdata_reg <= 0;
+        output_axis_tvalid_reg <= 0;
         prescale_reg <= 0;
         bit_cnt <= 0;
         busy_reg <= 0;
@@ -94,8 +94,8 @@ always @(posedge clk or posedge rst) begin
         overrun_error_reg <= 0;
         frame_error_reg <= 0;
 
-        if (output_axi_tvalid & output_axi_tready) begin
-            output_axi_tvalid_reg <= 0;
+        if (output_axis_tvalid & output_axis_tready) begin
+            output_axis_tvalid_reg <= 0;
         end
 
         if (prescale_reg > 0) begin
@@ -116,9 +116,9 @@ always @(posedge clk or posedge rst) begin
             end else if (bit_cnt == 1) begin
                 bit_cnt <= bit_cnt - 1;
                 if (rxd) begin
-                    output_axi_tdata_reg <= data_reg;
-                    output_axi_tvalid_reg <= 1;
-                    overrun_error_reg <= output_axi_tvalid_reg;
+                    output_axis_tdata_reg <= data_reg;
+                    output_axis_tvalid_reg <= 1;
+                    overrun_error_reg <= output_axis_tvalid_reg;
                 end else begin
                     frame_error_reg <= 1;
                 end

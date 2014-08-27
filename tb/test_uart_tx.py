@@ -27,7 +27,7 @@ from myhdl import *
 import os
 from Queue import Queue
 
-import axi_ep
+import axis_ep
 import uart_ep
 
 module = 'uart_tx'
@@ -45,9 +45,9 @@ def dut_uart_tx(clk,
                  rst,
                  current_test,
 
-                 input_axi_tdata,
-                 input_axi_tvalid,
-                 input_axi_tready,
+                 input_axis_tdata,
+                 input_axis_tvalid,
+                 input_axis_tready,
 
                  txd,
 
@@ -61,9 +61,9 @@ def dut_uart_tx(clk,
                 rst=rst,
                 current_test=current_test,
 
-                input_axi_tdata=input_axi_tdata,
-                input_axi_tvalid=input_axi_tvalid,
-                input_axi_tready=input_axi_tready,
+                input_axis_tdata=input_axis_tdata,
+                input_axis_tvalid=input_axis_tvalid,
+                input_axis_tready=input_axis_tready,
 
                 txd=txd,
 
@@ -78,13 +78,13 @@ def bench():
     rst = Signal(bool(0))
     current_test = Signal(intbv(0)[8:])
 
-    input_axi_tdata = Signal(intbv(0)[8:])
-    input_axi_tvalid = Signal(bool(0))
-    input_axi_tlast = Signal(bool(0))
+    input_axis_tdata = Signal(intbv(0)[8:])
+    input_axis_tvalid = Signal(bool(0))
+    input_axis_tlast = Signal(bool(0))
     prescale = Signal(intbv(0)[16:])
 
     # Outputs
-    input_axi_tready = Signal(bool(0))
+    input_axis_tready = Signal(bool(0))
     txd = Signal(bool(1))
 
     busy = Signal(bool(0))
@@ -94,11 +94,11 @@ def bench():
     source_pause = Signal(bool(0))
     sink_queue = Queue()
 
-    source = axi_ep.AXIStreamSource(clk,
+    source = axis_ep.AXIStreamSource(clk,
                                     rst,
-                                    tdata=input_axi_tdata,
-                                    tvalid=input_axi_tvalid,
-                                    tready=input_axi_tready,
+                                    tdata=input_axis_tdata,
+                                    tvalid=input_axis_tvalid,
+                                    tready=input_axis_tready,
                                     fifo=source_queue,
                                     pause=source_pause)
 
@@ -113,9 +113,9 @@ def bench():
                         rst,
                         current_test,
 
-                        input_axi_tdata,
-                        input_axi_tvalid,
-                        input_axi_tready,
+                        input_axis_tdata,
+                        input_axis_tvalid,
+                        input_axis_tready,
 
                         txd,
 
@@ -153,7 +153,7 @@ def bench():
         source_queue.put(bytearray(b'\x00\x01\x02\x04\x08\x10\x20\x40\x80'))
         yield clk.posedge
 
-        yield input_axi_tvalid.negedge
+        yield input_axis_tvalid.negedge
 
         yield delay(1000)
 
@@ -171,7 +171,7 @@ def bench():
         source_queue.put(bytearray(b'\x00\x01\x03\x07\x0F\x1F\x3F\x7F\xFF'))
         yield clk.posedge
 
-        yield input_axi_tvalid.negedge
+        yield input_axis_tvalid.negedge
 
         yield delay(1000)
 

@@ -27,7 +27,7 @@ from myhdl import *
 import os
 from Queue import Queue
 
-import axi_ep
+import axis_ep
 import uart_ep
 
 module = 'uart_rx'
@@ -45,9 +45,9 @@ def dut_uart_rx(clk,
                  rst,
                  current_test,
 
-                 output_axi_tdata,
-                 output_axi_tvalid,
-                 output_axi_tready,
+                 output_axis_tdata,
+                 output_axis_tvalid,
+                 output_axis_tready,
 
                  rxd,
 
@@ -63,9 +63,9 @@ def dut_uart_rx(clk,
                 rst=rst,
                 current_test=current_test,
 
-                output_axi_tdata=output_axi_tdata,
-                output_axi_tvalid=output_axi_tvalid,
-                output_axi_tready=output_axi_tready,
+                output_axis_tdata=output_axis_tdata,
+                output_axis_tvalid=output_axis_tvalid,
+                output_axis_tready=output_axis_tready,
 
                 rxd=rxd,
 
@@ -82,13 +82,13 @@ def bench():
     rst = Signal(bool(0))
     current_test = Signal(intbv(0)[8:])
 
-    output_axi_tready = Signal(bool(0))
+    output_axis_tready = Signal(bool(0))
     rxd = Signal(bool(1))
     prescale = Signal(intbv(0)[16:])
 
     # Outputs
-    output_axi_tdata = Signal(intbv(0)[8:])
-    output_axi_tvalid = Signal(bool(0))
+    output_axis_tdata = Signal(intbv(0)[8:])
+    output_axis_tvalid = Signal(bool(0))
 
     busy = Signal(bool(0))
     overrun_error = Signal(bool(0))
@@ -105,11 +105,11 @@ def bench():
                                 prescale=prescale,
                                 fifo=source_queue)
 
-    sink = axi_ep.AXIStreamSink(clk,
+    sink = axis_ep.AXIStreamSink(clk,
                                 rst,
-                                tdata=output_axi_tdata,
-                                tvalid=output_axi_tvalid,
-                                tready=output_axi_tready,
+                                tdata=output_axis_tdata,
+                                tvalid=output_axis_tvalid,
+                                tready=output_axis_tready,
                                 fifo=sink_queue,
                                 pause=sink_pause)
 
@@ -118,9 +118,9 @@ def bench():
                         rst,
                         current_test,
 
-                        output_axi_tdata,
-                        output_axi_tvalid,
-                        output_axi_tready,
+                        output_axis_tdata,
+                        output_axis_tvalid,
+                        output_axis_tready,
 
                         rxd,
 
