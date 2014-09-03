@@ -100,13 +100,15 @@ def bench():
                                     tvalid=input_axis_tvalid,
                                     tready=input_axis_tready,
                                     fifo=source_queue,
-                                    pause=source_pause)
+                                    pause=source_pause,
+                                    name='source')
 
     sink = uart_ep.UARTSink(clk,
                             rst,
                             rxd=txd,
                             prescale=prescale,
-                            fifo=sink_queue)
+                            fifo=sink_queue,
+                            name='sink')
 
     # DUT
     dut = dut_uart_tx(clk,

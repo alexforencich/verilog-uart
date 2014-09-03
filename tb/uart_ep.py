@@ -28,7 +28,8 @@ def UARTSource(clk, rst,
                 txd=None,
                 width=8,
                 prescale=2,
-                fifo=None):
+                fifo=None,
+                name=None):
 
     prescale_cnt = Signal(intbv(0))
     bit_cnt = Signal(intbv(0))
@@ -62,6 +63,8 @@ def UARTSource(clk, rst,
                     if len(frame) == 0:
                         frame = fifo.get()
                     temp_data = frame.pop(0)
+                    if name is not None:
+                        print("[%s] Sending data byte %d" % (name, temp_data))
                     prescale_cnt = (prescale << 3) - 1
                     bit_cnt = width+1
                     txd.next = 0
@@ -73,7 +76,8 @@ def UARTSink(clk, rst,
                   rxd=None,
                   width=8,
                   prescale=2,
-                  fifo=None):
+                  fifo=None,
+                  name=None):
 
     @instance
     def logic():
@@ -86,7 +90,6 @@ def UARTSink(clk, rst,
             yield clk.posedge, rst.posedge
 
             if rst:
-                print("reset")
                 frame = []
                 prescale_cnt = 0
                 bit_cnt = 0
@@ -98,7 +101,8 @@ def UARTSink(clk, rst,
                     prescale_cnt = (prescale << 3) - 1
                     if bit_cnt == width+1:
                         if rxd:
-                            print("Bad start bit")
+                            if name is not None:
+                                print("[%s] Bad start bit" % name)
                             prescale_cnt = 0
                             bit_cnt = 0
                     elif bit_cnt > 0:
@@ -106,11 +110,13 @@ def UARTSink(clk, rst,
                     else:
                         prescale_cnt = 0
                         if rxd:
-                            print("Got data byte %d" % temp_data)
+                            if name is not None:
+                                print("[%s] Got data byte %d" % (name, temp_data))
                             frame = [temp_data]
                             fifo.put(frame)
                         else:
-                            print("Bad stop bit")
+                            if name is not None:
+                                print("[%s] Bad stop bit" % name)
                 elif rxd == 0:
                     prescale_cnt = (prescale << 2) - 2
                     bit_cnt = width+2

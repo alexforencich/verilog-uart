@@ -55,7 +55,8 @@ def AXIStreamSource(clk, rst,
                     tready=Signal(bool(True)),
                     tlast=Signal(bool(False)),
                     fifo=None,
-                    pause=0):
+                    pause=0,
+                    name=None):
 
     tready_int = Signal(bool(False))
     tvalid_int = Signal(bool(False))
@@ -105,6 +106,8 @@ def AXIStreamSource(clk, rst,
                             frame = bytearray(frame)
                         if type(frame) is bytearray:
                             frame = words2list(frame, M, WL)
+                        if name is not None:
+                            print("[%s] Sending frame %s" % (name, repr(frame)))
                         data, keep = frame.pop(0)
                         tdata.next = data
                         if tkeep is not None:
@@ -122,7 +125,8 @@ def AXIStreamSink(clk, rst,
                   tready=Signal(bool(True)),
                   tlast=Signal(bool(True)),
                   fifo=None,
-                  pause=0):
+                  pause=0,
+                  name=None):
 
     tready_int = Signal(bool(False))
     tvalid_int = Signal(bool(False))
@@ -163,7 +167,8 @@ def AXIStreamSink(clk, rst,
                             frame = list2words(frame, M, WL)
                         if fifo is not None:
                             fifo.put(frame)
-                        print("Got frame %s" % repr(frame))
+                        if name is not None:
+                            print("[%s] Got frame %s" % (name, repr(frame)))
                         frame = []
 
     return logic, pause_logic

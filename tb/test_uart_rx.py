@@ -103,7 +103,8 @@ def bench():
                                 rst,
                                 txd=rxd,
                                 prescale=prescale,
-                                fifo=source_queue)
+                                fifo=source_queue,
+                                name='source')
 
     sink = axis_ep.AXIStreamSink(clk,
                                 rst,
@@ -111,7 +112,8 @@ def bench():
                                 tvalid=output_axis_tvalid,
                                 tready=output_axis_tready,
                                 fifo=sink_queue,
-                                pause=sink_pause)
+                                pause=sink_pause,
+                                name='sink')
 
     # DUT
     dut = dut_uart_rx(clk,
