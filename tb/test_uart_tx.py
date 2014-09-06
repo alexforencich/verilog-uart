@@ -55,7 +55,8 @@ def dut_uart_tx(clk,
 
                  prescale):
 
-    os.system(build_cmd)
+    if os.system(build_cmd):
+        raise Exception("Error running build command")
     return Cosimulation("vvp -m myhdl test_%s.vvp -lxt2" % module,
                 clk=clk,
                 rst=rst,
