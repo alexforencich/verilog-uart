@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 """
 
+from __future__ import unicode_literals
 from myhdl import *
 import os
 from Queue import Queue
