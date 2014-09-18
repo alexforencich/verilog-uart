@@ -10,5 +10,6 @@ install:
   - cd cosimulation/icarus
   - make && sudo install -m 0755 -D ./myhdl.vpi /usr/lib/ivl/myhdl.vpi
 script:
+  - cd tb
   - py.test
 
