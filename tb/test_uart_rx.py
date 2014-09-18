@@ -169,7 +169,7 @@ def bench():
 
         yield clk.posedge
 
-        rx_data = b''
+        rx_data = ''
         while not sink_queue.empty():
             rx_data += bytearray(sink_queue.get())
         assert rx_data == '\x00\x01\x02\x04\x08\x10\x20\x40\x80'
@@ -187,7 +187,7 @@ def bench():
 
         yield clk.posedge
 
-        rx_data = b''
+        rx_data = ''
         while not sink_queue.empty():
             rx_data += bytearray(sink_queue.get())
         assert rx_data == '\x00\x01\x03\x07\x0F\x1F\x3F\x7F\xFF'
