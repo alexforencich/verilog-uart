@@ -1,7 +1,9 @@
 language: python
 python:
   - "2.7"
-install:
+virtualenv:
+  system_site_packages: true
+before_install:
   - export d=`pwd`
   - sudo apt-get update -qq
   - sudo apt-get install -y iverilog
@@ -10,6 +12,5 @@ install:
   - cd $d/myhdl/cosimulation/icarus && make && sudo install -m 0755 -D ./myhdl.vpi /usr/lib/ivl/myhdl.vpi
   - cd $d
 script:
-  - cd tb
-  - py.test
+  - cd tb && py.test
 
