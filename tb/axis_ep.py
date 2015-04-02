@@ -24,36 +24,131 @@ THE SOFTWARE.
 
 from myhdl import *
 
-def words2list(f, N=1, WL=8):
-    frame = []
-    while len(f) > 0:
-        data = 0
-        keep = 0
-        for i in range(N):
-            data = data | (f.pop(0) << (i*WL))
-            keep = keep | (1 << i)
-            if len(f) == 0: break
-        frame.append((data, keep))
-    return frame
+class AXIStreamFrame(object):
+    def __init__(self, data=b'', keep=None, user=None):
+        self.B = 0
+        self.N = 8
+        self.M = 1
+        self.WL = 8
+        self.data = b''
+        self.keep = None
+        self.user = None
 
-def list2words(f, N=1, WL=8):
-    frame = []
-    mask = 2**WL-1
-    for data in f:
-        keep = -1
-        if type(data) is tuple:
-            data, keep = data
-        for i in range(N):
-            if keep & (1 << i):
-                frame.append((data >> (i*WL)) & mask)
-    return frame
+        if type(data) is bytes or type(data) is bytearray:
+            self.data = bytearray(data)
+        elif type(data) is AXIStreamFrame:
+            self.N = data.N
+            self.WL = data.WL
+            if type(data.data) is bytearray:
+                self.data = bytearray(data.data)
+            else:
+                self.data = list(data.data)
+            if data.keep is not None:
+                self.keep = list(data.keep)
+            if data.user is not None:
+                if type(data.user) is int or type(data.user) is bool:
+                    self.user = data.user
+                else:
+                    self.user = list(data.user)
+        else:
+            self.data = list(data)
+
+    def build(self):
+        if self.data is None:
+            return
+
+        f = list(self.data)
+        tdata = []
+        tkeep = []
+        tuser = []
+        i = 0
+
+        assert_tuser = False
+        if (type(self.user) is int or type(self.user) is bool) and self.user:
+            assert_tuser = True
+            self.user = None
+
+        if self.B == 0:
+            while len(f) > 0:
+                data = 0
+                keep = 0
+                for j in range(self.M):
+                    data = data | (f.pop(0) << (j*self.WL))
+                    keep = keep | (1 << j)
+                    if len(f) == 0: break
+                tdata.append(data)
+                if self.keep is None:
+                    tkeep.append(keep)
+                else:
+                    tkeep.append(self.keep[i])
+                if self.user is None:
+                    tuser.append(0)
+                else:
+                    tuser.append(self.user[i])
+                i += 1
+        else:
+            # multiple tdata signals
+            while len(f) > 0:
+                data = 0
+                tdata.append(f.pop(0))
+                tkeep.append(0)
+                if self.user is None:
+                    tuser.append(0)
+                else:
+                    tuser.append(self.user[i])
+                i += 1
+
+        if assert_tuser:
+            tuser[-1] = 1
+            self.user = 1
+
+        return tdata, tkeep, tuser
+
+    def parse(self, tdata, tkeep, tuser):
+        if tdata is None or tkeep is None or tuser is None:
+            return
+        if len(tdata) != len(tkeep) or len(tdata) != len(tuser):
+            raise Exception("Invalid data")
+
+        self.data = []
+        self.keep = []
+        self.user = []
+
+        if self.B == 0:
+            mask = 2**self.WL-1
+
+            for i in range(len(tdata)):
+                for j in range(self.M):
+                    if tkeep[i] & (1 << j):
+                        self.data.append((tdata[i] >> (j*self.WL)) & mask)
+                self.keep.append(tkeep[i])
+                self.user.append(tuser[i])
+        else:
+            for i in range(len(tdata)):
+                self.data.append(tdata[i])
+                self.keep.append(tkeep[i])
+                self.user.append(tuser[i])
+
+        if self.WL == 8:
+            self.data = bytearray(self.data)
+
+    def __eq__(self, other):
+        if type(other) is AXIStreamFrame:
+            return self.data == other.data
+
+    def __repr__(self):
+        return 'AXIStreamFrame(data=%s, keep=%s, user=%s)' % (repr(self.data), repr(self.keep), repr(self.user))
+
+    def __iter__(self):
+        return self.data.__iter__()
 
 def AXIStreamSource(clk, rst,
                     tdata=None,
-                    tkeep=None,
+                    tkeep=Signal(bool(True)),
                     tvalid=Signal(bool(False)),
                     tready=Signal(bool(True)),
                     tlast=Signal(bool(False)),
+                    tuser=Signal(bool(False)),
                     fifo=None,
                     pause=0,
                     name=None):
@@ -68,62 +163,82 @@ def AXIStreamSource(clk, rst,
 
     @instance
     def logic():
-        frame = []
+        frame = AXIStreamFrame()
+        data = []
+        keep = []
+        user = []
+        B = 0
         N = len(tdata)
-        M = 1
-        b = False
-        if tkeep is not None:
-            M = len(tkeep)
-        WL = (len(tdata)+M-1)/M
-        if WL == 8:
-            b = True
+        M = len(tkeep)
+        WL = int((len(tdata)+M-1)/M)
+
+        if type(tdata) is list or type(tdata) is tuple:
+            # multiple tdata signals
+            B = len(tdata)
+            N = [len(b) for b in tdata]
+            M = 1
+            WL = [1]*B
 
         while True:
             yield clk.posedge, rst.posedge
 
             if rst:
-                tdata.next = 0
-                if tkeep is not None:
-                    tkeep.next = 0
+                if B > 0:
+                    for s in tdata:
+                        s.next = 0
+                else:
+                    tdata.next = 0
+                tkeep.next = 0
                 tvalid_int.next = False
                 tlast.next = False
             else:
                 if tready_int and tvalid:
-                    if len(frame) > 0:
-                        data, keep = frame.pop(0)
-                        tdata.next = data
-                        if tkeep is not None:
-                            tkeep.next = keep
+                    if len(data) > 0:
+                        if B > 0:
+                            l = data.pop(0)
+                            for i in range(B):
+                                tdata[i].next = l[i]
+                        else:
+                            tdata.next = data.pop(0)
+                        tkeep.next = keep.pop(0)
+                        tuser.next = user.pop(0)
                         tvalid_int.next = True
-                        tlast.next = len(frame) == 0
+                        tlast.next = len(data) == 0
                     else:
                         tvalid_int.next = False
                         tlast.next = False
                 if (tlast and tready_int and tvalid) or not tvalid_int:
                     if not fifo.empty():
                         frame = fifo.get()
-                        if type(frame) is bytes:
-                            frame = bytearray(frame)
-                        if type(frame) is bytearray:
-                            frame = words2list(frame, M, WL)
+                        frame = AXIStreamFrame(frame)
+                        frame.B = B
+                        frame.N = N
+                        frame.M = M
+                        frame.WL = WL
+                        data, keep, user = frame.build()
                         if name is not None:
                             print("[%s] Sending frame %s" % (name, repr(frame)))
-                        data, keep = frame.pop(0)
-                        tdata.next = data
-                        if tkeep is not None:
-                            tkeep.next = keep
+                        if B > 0:
+                            l = data.pop(0)
+                            for i in range(B):
+                                tdata[i].next = l[i]
+                        else:
+                            tdata.next = data.pop(0)
+                        tkeep.next = keep.pop(0)
+                        tuser.next = user.pop(0)
                         tvalid_int.next = True
-                        tlast.next = len(frame) == 0
+                        tlast.next = len(data) == 0
 
     return logic, pause_logic
 
 
 def AXIStreamSink(clk, rst,
                   tdata=None,
-                  tkeep=None,
+                  tkeep=Signal(bool(True)),
                   tvalid=Signal(bool(True)),
                   tready=Signal(bool(True)),
                   tlast=Signal(bool(True)),
+                  tuser=Signal(bool(False)),
                   fifo=None,
                   pause=0,
                   name=None):
@@ -138,38 +253,58 @@ def AXIStreamSink(clk, rst,
 
     @instance
     def logic():
-        frame = []
+        frame = AXIStreamFrame()
+        data = []
+        keep = []
+        user = []
+        B = 0
         N = len(tdata)
-        M = 1
-        b = False
-        if tkeep is not None:
-            M = len(tkeep)
-        WL = (len(tdata)+M-1)/M
-        if WL == 8:
-            b = True
+        M = len(tkeep)
+        WL = int((len(tdata)+M-1)/M)
+
+        if type(tdata) is list or type(tdata) is tuple:
+            # multiple tdata signals
+            B = len(tdata)
+            N = [len(b) for b in tdata]
+            M = 1
+            WL = [1]*B
 
         while True:
             yield clk.posedge, rst.posedge
 
             if rst:
                 tready_int.next = False
-                frame = []
+                frame = AXIStreamFrame()
+                data = []
+                keep = []
+                user = []
             else:
                 tready_int.next = True
 
                 if tvalid_int:
-                    if tkeep is not None:
-                        frame.append((int(tdata), int(tkeep)))
+                    if B > 0:
+                        l = []
+                        for i in range(B):
+                            l.append(int(tdata[i]))
+                        data.append(l)
                     else:
-                        frame.append(int(tdata))
+                        data.append(int(tdata))
+                    keep.append(int(tkeep))
+                    user.append(int(tuser))
                     if tlast:
-                        if b:
-                            frame = list2words(frame, M, WL)
+                        frame.B = B
+                        frame.N = N
+                        frame.M = M
+                        frame.WL = WL
+                        frame.parse(data, keep, user)
                         if fifo is not None:
                             fifo.put(frame)
                         if name is not None:
                             print("[%s] Got frame %s" % (name, repr(frame)))
-                        frame = []
+                        frame = AXIStreamFrame()
+                        data = []
+                        keep = []
+                        user = []
 
     return logic, pause_logic
 
