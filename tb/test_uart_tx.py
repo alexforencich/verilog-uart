@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 """
 
 Copyright (c) 2014 Alex Forencich
@@ -25,7 +25,11 @@ THE SOFTWARE.
 
 from myhdl import *
 import os
-from Queue import Queue
+
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 
 import axis_ep
 import uart_ep
@@ -153,7 +157,7 @@ def bench():
         print("test 1: walk")
         current_test.next = 1
 
-        source_queue.put(bytearray('\x00\x01\x02\x04\x08\x10\x20\x40\x80'))
+        source_queue.put(bytearray(b'\x00\x01\x02\x04\x08\x10\x20\x40\x80'))
         yield clk.posedge
 
         yield input_axis_tvalid.negedge
@@ -162,16 +166,16 @@ def bench():
 
         yield clk.posedge
 
-        rx_data = ''
+        rx_data = b''
         while not sink_queue.empty():
             rx_data += bytearray(sink_queue.get())
-        assert rx_data == '\x00\x01\x02\x04\x08\x10\x20\x40\x80'
+        assert rx_data == b'\x00\x01\x02\x04\x08\x10\x20\x40\x80'
 
         yield clk.posedge
         print("test 2: walk 2")
         current_test.next = 2
 
-        source_queue.put(bytearray('\x00\x01\x03\x07\x0F\x1F\x3F\x7F\xFF'))
+        source_queue.put(bytearray(b'\x00\x01\x03\x07\x0F\x1F\x3F\x7F\xFF'))
         yield clk.posedge
 
         yield input_axis_tvalid.negedge
@@ -180,10 +184,10 @@ def bench():
 
         yield clk.posedge
 
-        rx_data = ''
+        rx_data = b''
         while not sink_queue.empty():
             rx_data += bytearray(sink_queue.get())
-        assert rx_data == '\x00\x01\x03\x07\x0F\x1F\x3F\x7F\xFF'
+        assert rx_data == b'\x00\x01\x03\x07\x0F\x1F\x3F\x7F\xFF'
 
         yield delay(100)
 
