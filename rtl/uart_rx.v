@@ -66,6 +66,8 @@ module uart_rx #
 reg [DATA_WIDTH-1:0] output_axis_tdata_reg = 0;
 reg output_axis_tvalid_reg = 0;
 
+reg rxd_reg = 1;
+
 reg busy_reg = 0;
 reg overrun_error_reg = 0;
 reg frame_error_reg = 0;
@@ -85,12 +87,14 @@ always @(posedge clk or posedge rst) begin
     if (rst) begin
         output_axis_tdata_reg <= 0;
         output_axis_tvalid_reg <= 0;
+        rxd_reg <= 1;
         prescale_reg <= 0;
         bit_cnt <= 0;
         busy_reg <= 0;
         overrun_error_reg <= 0;
         frame_error_reg <= 0;
     end else begin
+        rxd_reg <= rxd;
         overrun_error_reg <= 0;
         frame_error_reg <= 0;
 
@@ -102,7 +106,7 @@ always @(posedge clk or posedge rst) begin
             prescale_reg <= prescale_reg - 1;
         end else if (bit_cnt > 0) begin
             if (bit_cnt > DATA_WIDTH+1) begin
-                if (~rxd) begin
+                if (~rxd_reg) begin
                     bit_cnt <= bit_cnt - 1;
                     prescale_reg <= (prescale << 3)-1;
                 end else begin
@@ -112,10 +116,10 @@ always @(posedge clk or posedge rst) begin
             end else if (bit_cnt > 1) begin
                 bit_cnt <= bit_cnt - 1;
                 prescale_reg <= (prescale << 3)-1;
-                data_reg <= {rxd, data_reg[DATA_WIDTH-1:1]};
+                data_reg <= {rxd_reg, data_reg[DATA_WIDTH-1:1]};
             end else if (bit_cnt == 1) begin
                 bit_cnt <= bit_cnt - 1;
-                if (rxd) begin
+                if (rxd_reg) begin
                     output_axis_tdata_reg <= data_reg;
                     output_axis_tvalid_reg <= 1;
                     overrun_error_reg <= output_axis_tvalid_reg;
@@ -125,7 +129,7 @@ always @(posedge clk or posedge rst) begin
             end
         end else begin
             busy_reg <= 0;
-            if (~rxd) begin
+            if (~rxd_reg) begin
                 prescale_reg <= (prescale << 2)-2;
                 bit_cnt <= DATA_WIDTH+2;
                 data_reg <= 0;
