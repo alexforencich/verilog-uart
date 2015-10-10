@@ -75,7 +75,7 @@ assign txd = txd_reg;
 
 assign busy = busy_reg;
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     if (rst) begin
         input_axis_tready_reg <= 0;
         txd_reg <= 1;

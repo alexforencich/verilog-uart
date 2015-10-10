@@ -83,7 +83,7 @@ assign busy = busy_reg;
 assign overrun_error = overrun_error_reg;
 assign frame_error = frame_error_reg;
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     if (rst) begin
         output_axis_tdata_reg <= 0;
         output_axis_tvalid_reg <= 0;
