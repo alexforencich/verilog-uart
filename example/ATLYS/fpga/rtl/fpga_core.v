@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2014 Alex Forencich
+Copyright (c) 2014-2016 Alex Forencich
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -97,6 +97,11 @@ uart_inst (
 //assign led = sw;
 assign led = uart_tx_axis_tdata;
 assign phy_reset_n = ~rst;
+
+assign phy_gtx_clk = 1'b0;
+assign phy_txd = 8'd0;
+assign phy_tx_en = 1'b0;
+assign phy_tx_er = 1'b0;
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
