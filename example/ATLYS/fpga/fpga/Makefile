@@ -14,9 +14,9 @@ SYN_FILES += rtl/fpga_core.v
 SYN_FILES += rtl/debounce_switch.v
 SYN_FILES += rtl/sync_reset.v
 SYN_FILES += rtl/sync_signal.v
-SYN_FILES += ../../../rtl/uart.v
-SYN_FILES += ../../../rtl/uart_rx.v
-SYN_FILES += ../../../rtl/uart_tx.v
+SYN_FILES += lib/uart/rtl/uart.v
+SYN_FILES += lib/uart/rtl/uart_rx.v
+SYN_FILES += lib/uart/rtl/uart_tx.v
 #SYN_FILES += coregen/dcm_i100_o125/dcm_i100_o125.v
 
 # UCF files
