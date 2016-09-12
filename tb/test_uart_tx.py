@@ -26,55 +26,20 @@ THE SOFTWARE.
 from myhdl import *
 import os
 
-try:
-    from queue import Queue
-except ImportError:
-    from Queue import Queue
-
 import axis_ep
 import uart_ep
 
 module = 'uart_tx'
+testbench = 'test_%s' % module
 
 srcs = []
 
 srcs.append("../rtl/%s.v" % module)
-srcs.append("test_%s.v" % module)
+srcs.append("%s.v" % testbench)
 
 src = ' '.join(srcs)
 
-build_cmd = "iverilog -o test_%s.vvp %s" % (module, src)
-
-def dut_uart_tx(clk,
-                 rst,
-                 current_test,
-
-                 input_axis_tdata,
-                 input_axis_tvalid,
-                 input_axis_tready,
-
-                 txd,
-
-                 busy,
-
-                 prescale):
-
-    if os.system(build_cmd):
-        raise Exception("Error running build command")
-    return Cosimulation("vvp -m myhdl test_%s.vvp -lxt2" % module,
-                clk=clk,
-                rst=rst,
-                current_test=current_test,
-
-                input_axis_tdata=input_axis_tdata,
-                input_axis_tvalid=input_axis_tvalid,
-                input_axis_tready=input_axis_tready,
-
-                txd=txd,
-
-                busy=busy,
-
-                prescale=prescale)
+build_cmd = "iverilog -o %s.vvp %s" % (testbench, src)
 
 def bench():
 
@@ -95,40 +60,50 @@ def bench():
     busy = Signal(bool(0))
 
     # sources and sinks
-    source_queue = Queue()
     source_pause = Signal(bool(0))
-    sink_queue = Queue()
 
-    source = axis_ep.AXIStreamSource(clk,
-                                    rst,
-                                    tdata=input_axis_tdata,
-                                    tvalid=input_axis_tvalid,
-                                    tready=input_axis_tready,
-                                    fifo=source_queue,
-                                    pause=source_pause,
-                                    name='source')
+    source = axis_ep.AXIStreamSource()
 
-    sink = uart_ep.UARTSink(clk,
-                            rst,
-                            rxd=txd,
-                            prescale=prescale,
-                            fifo=sink_queue,
-                            name='sink')
+    source_logic = source.create_logic(
+        clk,
+        rst,
+        tdata=input_axis_tdata,
+        tvalid=input_axis_tvalid,
+        tready=input_axis_tready,
+        pause=source_pause,
+        name='source'
+    )
+
+    sink = uart_ep.UARTSink()
+
+    sink_logic = sink.create_logic(
+        clk,
+        rst,
+        rxd=txd,
+        prescale=prescale,
+        name='sink'
+    )
 
     # DUT
-    dut = dut_uart_tx(clk,
-                        rst,
-                        current_test,
+    if os.system(build_cmd):
+        raise Exception("Error running build command")
+    
+    dut = Cosimulation(
+        "vvp -m myhdl %s.vvp -lxt2" % testbench,
+        clk=clk,
+        rst=rst,
+        current_test=current_test,
 
-                        input_axis_tdata,
-                        input_axis_tvalid,
-                        input_axis_tready,
+        input_axis_tdata=input_axis_tdata,
+        input_axis_tvalid=input_axis_tvalid,
+        input_axis_tready=input_axis_tready,
 
-                        txd,
+        txd=txd,
 
-                        busy,
+        busy=busy,
 
-                        prescale)
+        prescale=prescale
+    )
 
     @always(delay(4))
     def clkgen():
@@ -157,7 +132,7 @@ def bench():
         print("test 1: walk")
         current_test.next = 1
 
-        source_queue.put(bytearray(b'\x00\x01\x02\x04\x08\x10\x20\x40\x80'))
+        source.write(b'\x00\x01\x02\x04\x08\x10\x20\x40\x80')
         yield clk.posedge
 
         yield input_axis_tvalid.negedge
@@ -166,16 +141,15 @@ def bench():
 
         yield clk.posedge
 
-        rx_data = b''
-        while not sink_queue.empty():
-            rx_data += bytearray(sink_queue.get())
+        rx_data = bytearray(sink.read())
+        print(rx_data)
         assert rx_data == b'\x00\x01\x02\x04\x08\x10\x20\x40\x80'
 
         yield clk.posedge
         print("test 2: walk 2")
         current_test.next = 2
 
-        source_queue.put(bytearray(b'\x00\x01\x03\x07\x0F\x1F\x3F\x7F\xFF'))
+        source.write(b'\x00\x01\x03\x07\x0F\x1F\x3F\x7F\xFF')
         yield clk.posedge
 
         yield input_axis_tvalid.negedge
@@ -184,16 +158,15 @@ def bench():
 
         yield clk.posedge
 
-        rx_data = b''
-        while not sink_queue.empty():
-            rx_data += bytearray(sink_queue.get())
+        rx_data = bytearray(sink.read())
+        print(rx_data)
         assert rx_data == b'\x00\x01\x03\x07\x0F\x1F\x3F\x7F\xFF'
 
         yield delay(100)
 
         raise StopSimulation
 
-    return dut, source, sink, clkgen, check
+    return dut, source_logic, sink_logic, clkgen, check
 
 def test_bench():
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
