@@ -84,7 +84,7 @@ class UARTSource(object):
                         bit_cnt = width+1
                         txd.next = 0
 
-        return logic
+        return instances()
 
 
 class UARTSink(object):
@@ -159,5 +159,5 @@ class UARTSink(object):
                         bit_cnt = width+2
                         temp_data = 0
 
-        return logic
+        return instances()
 
