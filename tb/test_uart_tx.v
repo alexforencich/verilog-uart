@@ -33,12 +33,12 @@ reg clk = 0;
 reg rst = 0;
 reg [7:0] current_test = 0;
 
-reg [7:0] input_axis_tdata = 8'd0;
-reg input_axis_tvalid = 1'b0;
+reg [7:0] s_axis_tdata = 8'd0;
+reg s_axis_tvalid = 1'b0;
 reg [15:0] prescale = 0;
 
 // Outputs
-wire input_axis_tready;
+wire s_axis_tready;
 wire txd;
 
 wire busy;
@@ -48,10 +48,10 @@ initial begin
     $from_myhdl(clk,
                 rst,
                 current_test,
-                input_axis_tdata,
-                input_axis_tvalid,
+                s_axis_tdata,
+                s_axis_tvalid,
                 prescale);
-    $to_myhdl(input_axis_tready,
+    $to_myhdl(s_axis_tready,
                 txd,
                 busy);
 
@@ -67,9 +67,9 @@ UUT (
     .clk(clk),
     .rst(rst),
     // axi input
-    .input_axis_tdata(input_axis_tdata),
-    .input_axis_tvalid(input_axis_tvalid),
-    .input_axis_tready(input_axis_tready),
+    .s_axis_tdata(s_axis_tdata),
+    .s_axis_tvalid(s_axis_tvalid),
+    .s_axis_tready(s_axis_tready),
     // output
     .txd(txd),
     // status

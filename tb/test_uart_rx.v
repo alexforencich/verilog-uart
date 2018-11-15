@@ -33,13 +33,13 @@ reg clk = 0;
 reg rst = 0;
 reg [7:0] current_test = 0;
 
-reg output_axis_tready = 0;
+reg m_axis_tready = 0;
 reg rxd = 1;
 reg [15:0] prescale = 0;
 
 // Outputs
-wire [7:0] output_axis_tdata;
-wire output_axis_tvalid;
+wire [7:0] m_axis_tdata;
+wire m_axis_tvalid;
 
 wire busy;
 wire overrun_error;
@@ -50,11 +50,11 @@ initial begin
     $from_myhdl(clk,
                 rst,
                 current_test,
-                output_axis_tready,
+                m_axis_tready,
                 rxd,
                 prescale);
-    $to_myhdl(output_axis_tdata,
-              output_axis_tvalid,
+    $to_myhdl(m_axis_tdata,
+              m_axis_tvalid,
               busy,
               overrun_error,
               frame_error);
@@ -71,9 +71,9 @@ UUT (
     .clk(clk),
     .rst(rst),
     // axi output
-    .output_axis_tdata(output_axis_tdata),
-    .output_axis_tvalid(output_axis_tvalid),
-    .output_axis_tready(output_axis_tready),
+    .m_axis_tdata(m_axis_tdata),
+    .m_axis_tvalid(m_axis_tvalid),
+    .m_axis_tready(m_axis_tready),
     // input
     .rxd(rxd),
     // status

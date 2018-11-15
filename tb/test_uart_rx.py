@@ -48,13 +48,13 @@ def bench():
     rst = Signal(bool(0))
     current_test = Signal(intbv(0)[8:])
 
-    output_axis_tready = Signal(bool(0))
+    m_axis_tready = Signal(bool(0))
     rxd = Signal(bool(1))
     prescale = Signal(intbv(0)[16:])
 
     # Outputs
-    output_axis_tdata = Signal(intbv(0)[8:])
-    output_axis_tvalid = Signal(bool(0))
+    m_axis_tdata = Signal(intbv(0)[8:])
+    m_axis_tvalid = Signal(bool(0))
 
     busy = Signal(bool(0))
     overrun_error = Signal(bool(0))
@@ -78,9 +78,9 @@ def bench():
     sink_logic = sink.create_logic(
         clk,
         rst,
-        tdata=output_axis_tdata,
-        tvalid=output_axis_tvalid,
-        tready=output_axis_tready,
+        tdata=m_axis_tdata,
+        tvalid=m_axis_tvalid,
+        tready=m_axis_tready,
         pause=sink_pause,
         name='sink'
     )
@@ -95,9 +95,9 @@ def bench():
         rst=rst,
         current_test=current_test,
 
-        output_axis_tdata=output_axis_tdata,
-        output_axis_tvalid=output_axis_tvalid,
-        output_axis_tready=output_axis_tready,
+        m_axis_tdata=m_axis_tdata,
+        m_axis_tvalid=m_axis_tvalid,
+        m_axis_tready=m_axis_tready,
 
         rxd=rxd,
 

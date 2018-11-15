@@ -48,13 +48,13 @@ def bench():
     rst = Signal(bool(0))
     current_test = Signal(intbv(0)[8:])
 
-    input_axis_tdata = Signal(intbv(0)[8:])
-    input_axis_tvalid = Signal(bool(0))
-    input_axis_tlast = Signal(bool(0))
+    s_axis_tdata = Signal(intbv(0)[8:])
+    s_axis_tvalid = Signal(bool(0))
+    s_axis_tlast = Signal(bool(0))
     prescale = Signal(intbv(0)[16:])
 
     # Outputs
-    input_axis_tready = Signal(bool(0))
+    s_axis_tready = Signal(bool(0))
     txd = Signal(bool(1))
 
     busy = Signal(bool(0))
@@ -67,9 +67,9 @@ def bench():
     source_logic = source.create_logic(
         clk,
         rst,
-        tdata=input_axis_tdata,
-        tvalid=input_axis_tvalid,
-        tready=input_axis_tready,
+        tdata=s_axis_tdata,
+        tvalid=s_axis_tvalid,
+        tready=s_axis_tready,
         pause=source_pause,
         name='source'
     )
@@ -94,9 +94,9 @@ def bench():
         rst=rst,
         current_test=current_test,
 
-        input_axis_tdata=input_axis_tdata,
-        input_axis_tvalid=input_axis_tvalid,
-        input_axis_tready=input_axis_tready,
+        s_axis_tdata=s_axis_tdata,
+        s_axis_tvalid=s_axis_tvalid,
+        s_axis_tready=s_axis_tready,
 
         txd=txd,
 
@@ -135,7 +135,7 @@ def bench():
         source.write(b'\x00\x01\x02\x04\x08\x10\x20\x40\x80')
         yield clk.posedge
 
-        yield input_axis_tvalid.negedge
+        yield s_axis_tvalid.negedge
 
         yield delay(1000)
 
@@ -152,7 +152,7 @@ def bench():
         source.write(b'\x00\x01\x03\x07\x0F\x1F\x3F\x7F\xFF')
         yield clk.posedge
 
-        yield input_axis_tvalid.negedge
+        yield s_axis_tvalid.negedge
 
         yield delay(1000)
 

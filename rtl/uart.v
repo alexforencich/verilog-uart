@@ -40,16 +40,16 @@ module uart #
     /*
      * AXI input
      */
-    input  wire [DATA_WIDTH-1:0]  input_axis_tdata,
-    input  wire                   input_axis_tvalid,
-    output wire                   input_axis_tready,
+    input  wire [DATA_WIDTH-1:0]  s_axis_tdata,
+    input  wire                   s_axis_tvalid,
+    output wire                   s_axis_tready,
 
     /*
      * AXI output
      */
-    output wire [DATA_WIDTH-1:0]  output_axis_tdata,
-    output wire                   output_axis_tvalid,
-    input  wire                   output_axis_tready,
+    output wire [DATA_WIDTH-1:0]  m_axis_tdata,
+    output wire                   m_axis_tvalid,
+    input  wire                   m_axis_tready,
 
     /*
      * UART interface
@@ -79,9 +79,9 @@ uart_tx_inst (
     .clk(clk),
     .rst(rst),
     // axi input
-    .input_axis_tdata(input_axis_tdata),
-    .input_axis_tvalid(input_axis_tvalid),
-    .input_axis_tready(input_axis_tready),
+    .s_axis_tdata(s_axis_tdata),
+    .s_axis_tvalid(s_axis_tvalid),
+    .s_axis_tready(s_axis_tready),
     // output
     .txd(txd),
     // status
@@ -97,9 +97,9 @@ uart_rx_inst (
     .clk(clk),
     .rst(rst),
     // axi output
-    .output_axis_tdata(output_axis_tdata),
-    .output_axis_tvalid(output_axis_tvalid),
-    .output_axis_tready(output_axis_tready),
+    .m_axis_tdata(m_axis_tdata),
+    .m_axis_tvalid(m_axis_tvalid),
+    .m_axis_tready(m_axis_tready),
     // input
     .rxd(rxd),
     // status
