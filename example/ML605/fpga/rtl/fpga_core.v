@@ -87,14 +87,14 @@ uart
 uart_inst (
     .clk(clk_125mhz),
     .rst(rst_125mhz),
-    // axi input
-    .input_axis_tdata(uart_tx_axis_tdata),
-    .input_axis_tvalid(uart_tx_axis_tvalid),
-    .input_axis_tready(uart_tx_axis_tready),
-    // axi output
-    .output_axis_tdata(uart_rx_axis_tdata),
-    .output_axis_tvalid(uart_rx_axis_tvalid),
-    .output_axis_tready(uart_rx_axis_tready),
+    // AXI input
+    .s_axis_tdata(uart_tx_axis_tdata),
+    .s_axis_tvalid(uart_tx_axis_tvalid),
+    .s_axis_tready(uart_tx_axis_tready),
+    // AXI output
+    .m_axis_tdata(uart_rx_axis_tdata),
+    .m_axis_tvalid(uart_rx_axis_tvalid),
+    .m_axis_tready(uart_rx_axis_tready),
     // uart
     .rxd(uart_txd),
     .txd(uart_rxd),
