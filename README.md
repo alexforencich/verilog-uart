@@ -1,12 +1,14 @@
 # Verilog UART Readme
 
+[![Build Status](https://github.com/alexforencich/verilog-uart/workflows/Regression%20Tests/badge.svg?branch=master)](https://github.com/alexforencich/verilog-uart/actions/)
+
 For more information and updates: http://alexforencich.com/wiki/en/verilog/uart/start
 
 GitHub repository: https://github.com/alexforencich/verilog-uart
 
 ## Introduction
 
-This is a basic UART to AXI Stream IP core, written in Verilog with MyHDL
+This is a basic UART to AXI Stream IP core, written in Verilog with cocotb
 testbenches.
 
 ## Documentation
@@ -59,22 +61,4 @@ two byte transfer with sink pause after each byte
 
 ## Testing
 
-Running the included testbenches requires MyHDL and Icarus Verilog.  Make sure
-that myhdl.vpi is installed properly for cosimulation to work correctly.  The
-testbenches can be run with a Python test runner like nose or py.test, or the
-individual test scripts can be run with python directly.
-
-### Testbench Files
-
-    tb/axis_ep.py        : MyHDL AXI Stream endpoints
-    tb/test_uart_rx.py   : MyHDL testbench for uart_rx module
-    tb/test_uart_rx.v    : Verilog toplevel file for uart_rx cosimulation
-    tb/test_uart_tx.py   : MyHDL testbench for uart_tx module
-    tb/test_uart_tx.v    : Verilog toplevel file for uart_tx cosimulation
-    tb/uart_ep.py        : MyHDL UART endpoints
-
-## Example design
-
-The included example design is targeted to a Digilent Atlys board.  To build
-it, cd into example/ATLYS/fpga, make sure the Xilinx settings file has been
-sourced correctly, and run make.
+Running the included testbenches requires [cocotb](https://github.com/cocotb/cocotb), [cocotbext-axi](https://github.com/alexforencich/cocotbext-axi), and [Icarus Verilog](http://iverilog.icarus.com/).  The testbenches can be run with pytest directly (requires [cocotb-test](https://github.com/themperek/cocotb-test)), pytest via tox, or via cocotb makefiles.
