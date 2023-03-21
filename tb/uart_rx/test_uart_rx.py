@@ -34,7 +34,7 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
 from cocotb.regression import TestFactory
 
-from cocotbext.axi import AxiStreamSink
+from cocotbext.axi import AxiStreamSink, AxiStreamBus
 from cocotbext.uart import UartSource
 
 
@@ -49,7 +49,7 @@ class TB:
 
         self.source = UartSource(dut.rxd, baud=baud, bits=len(dut.m_axis_tdata), stop_bits=1)
 
-        self.sink = AxiStreamSink(dut, "m_axis", dut.clk, dut.rst)
+        self.sink = AxiStreamSink(AxiStreamBus.from_prefix(dut, "m_axis"), dut.clk, dut.rst)
 
         dut.prescale.setimmediatevalue(int(1/8e-9/baud/8))
 

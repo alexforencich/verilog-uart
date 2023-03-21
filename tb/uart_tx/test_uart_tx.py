@@ -34,7 +34,7 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
 from cocotb.regression import TestFactory
 
-from cocotbext.axi import AxiStreamSource
+from cocotbext.axi import AxiStreamSource, AxiStreamBus
 from cocotbext.uart import UartSink
 
 
@@ -47,7 +47,7 @@ class TB:
 
         cocotb.fork(Clock(dut.clk, 8, units="ns").start())
 
-        self.source = AxiStreamSource(dut, "s_axis", dut.clk, dut.rst)
+        self.source = AxiStreamSource(AxiStreamBus.from_prefix(dut, "s_axis"), dut.clk, dut.rst)
 
         self.sink = UartSink(dut.txd, baud=baud, bits=len(dut.s_axis_tdata), stop_bits=1)
 
