@@ -5,17 +5,17 @@ on: [push, pull_request]
 jobs:
   build:
     name: Python ${{matrix.python-version}}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     
     strategy:
       matrix:
-        python-version: [3.9]
+        python-version: ["3.10"]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -29,4 +29,4 @@ jobs:
         pip install tox tox-gh-actions
 
     - name: Test with tox
-      run: tox
+      run: tox -- -n auto --verbose
